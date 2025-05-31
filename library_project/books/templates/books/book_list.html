@@ -1,0 +1,122 @@
+{% extends 'books/base.html' %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <input type="text" name="q" class="form-control" placeholder="جستجو در نام کتاب یا نویسنده..." value="{{ search_query }}">
+                            <button class="btn btn-primary" type="submit">جستجو</button>
+                        </div>
+                    </div>
+                    <div class="col-md-4 d-none d-md-block">
+                        <select name="genre" class="form-select" onchange="this.form.submit()">
+                            <option value="">همه ژانرها</option>
+                            {% for genre in genres %}
+                            <option value="{{ genre.name }}" {% if genre_filter == genre.name %}selected{% endif %}>{{ genre.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-none d-md-block">
+                        <a href="{% url 'add_book' %}" class="btn btn-success w-100">افزودن کتاب</a>
+                    </div>
+                    <!-- Mobile buttons -->
+                    <div class="col-6 d-md-none">
+                        <button type="button" class="btn btn-outline-primary w-100" data-bs-toggle="collapse" data-bs-target="#mobileFilters">
+                            فیلترها
+                        </button>
+                    </div>
+                    <div class="col-6 d-md-none">
+                        <a href="{% url 'add_book' %}" class="btn btn-success w-100">افزودن کتاب</a>
+                    </div>
+                </form>
+                <!-- Mobile filters -->
+                <div class="collapse mt-3 d-md-none" id="mobileFilters">
+                    <div class="card card-body">
+                        <select name="genre" class="form-select mb-2" onchange="this.form.submit()">
+                            <option value="">همه ژانرها</option>
+                            {% for genre in genres %}
+                            <option value="{{ genre.name }}" {% if genre_filter == genre.name %}selected{% endif %}>{{ genre.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if books %}
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {% for book in books %}
+    <div class="col">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{ book.title }}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">{{ book.author }}</h6>
+                <p class="card-text">
+                    <span class="badge bg-primary">{{ book.genre.name }}</span>
+                    <small class="text-muted d-block mt-2">تاریخ چاپ: {{ book.published_date|date:"Y/m/d" }}</small>
+                </p>
+                <p class="card-text">{{ book.description|truncatewords:30 }}</p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if books.paginator.num_pages > 1 %}
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if books.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if genre_filter %}&genre={{ genre_filter }}{% endif %}" aria-label="First">
+                <span aria-hidden="true">&laquo;&laquo;</span>
+            </a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ books.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if genre_filter %}&genre={{ genre_filter }}{% endif %}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        {% endif %}
+
+        {% for num in books.paginator.page_range %}
+            {% if books.number == num %}
+            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > books.number|add:'-3' and num < books.number|add:'3' %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if genre_filter %}&genre={{ genre_filter }}{% endif %}">{{ num }}</a>
+            </li>
+            {% endif %}
+        {% endfor %}
+
+        {% if books.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ books.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if genre_filter %}&genre={{ genre_filter }}{% endif %}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ books.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if genre_filter %}&genre={{ genre_filter }}{% endif %}" aria-label="Last">
+                <span aria-hidden="true">&raquo;&raquo;</span>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="alert alert-info text-center">
+    {% if search_query or genre_filter %}
+    هیچ کتابی با این معیارها یافت نشد.
+    {% else %}
+    هنوز هیچ کتابی اضافه نشده است.
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
