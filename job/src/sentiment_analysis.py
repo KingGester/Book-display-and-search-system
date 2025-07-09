@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import re
 
-# ------------------ Text Cleaning ------------------
+
 def clean_text(text):
     text = re.sub(r"http\S+", "", str(text))       # remove URLs
     text = re.sub(r"[^\w\s]", "", text)           # remove punctuation
@@ -17,7 +17,7 @@ def preprocess_df(df, text_col="Text"):
     df[text_col] = df[text_col].apply(clean_text)
     return df
 
-# ------------------ Feature Extraction ------------------
+
 def vectorize_texts(texts):
     vectorizer = TfidfVectorizer(
         max_features=5000,
@@ -28,13 +28,13 @@ def vectorize_texts(texts):
     X = vectorizer.fit_transform(texts)
     return X, vectorizer
 
-# ------------------ Model Training ------------------
+
 def train_model(X, y):
     model = LogisticRegression(max_iter=1000, class_weight='balanced')
     model.fit(X, y)
     return model
 
-# ------------------ Evaluation ------------------
+
 def evaluate_model(model, X_test, y_test):
     preds = model.predict(X_test)
     print("\n[INFO] Classification Report:")
@@ -48,13 +48,13 @@ def evaluate_model(model, X_test, y_test):
     plt.tight_layout()
     plt.show()
 
-# ------------------ Predicting New Texts ------------------
+
 def predict_sentiment(model, vectorizer, texts):
     texts_clean = [clean_text(t) for t in texts]
     X = vectorizer.transform(texts_clean)
     return model.predict(X)
 
-# ------------------ Plot Distribution ------------------
+
 def plot_sentiment_distribution(y):
     plt.figure(figsize=(6, 6))
     y.value_counts().plot.pie(autopct='%1.1f%%', startangle=90, colors=sns.color_palette("Set2"))
